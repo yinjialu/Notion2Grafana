@@ -1,7 +1,7 @@
 {
   "name": "notion",
   "version": "1.0.0",
-  "description": "A datasource plugin to visualization data from notion database",
+  "description": "A datasource plugin to visualize data from notion database",
   "scripts": {
     "build": "webpack -c ./.config/webpack/webpack.config.ts --env production",
     "dev": "webpack -w -c ./.config/webpack/webpack.config.ts --env development",
