@@ -14,6 +14,8 @@ export const DEFAULT_QUERY: Partial<MyQuery> = {
  */
 export interface MyDataSourceOptions extends DataSourceJsonData {
   path?: string;
+  NOTION_KEY?: string;
+  NOTION_DATABASE_ID?: string;
 }
 
 /**
@@ -21,4 +23,5 @@ export interface MyDataSourceOptions extends DataSourceJsonData {
  */
 export interface MySecureJsonData {
   apiKey?: string;
+  NOTION_KEY?: string;
 }

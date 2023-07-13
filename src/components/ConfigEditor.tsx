@@ -3,7 +3,7 @@ import { InlineField, Input, SecretInput } from '@grafana/ui';
 import { DataSourcePluginOptionsEditorProps } from '@grafana/data';
 import { MyDataSourceOptions, MySecureJsonData } from '../types';
 
-interface Props extends DataSourcePluginOptionsEditorProps<MyDataSourceOptions> {}
+interface Props extends DataSourcePluginOptionsEditorProps<MyDataSourceOptions, MySecureJsonData> {}
 
 export function ConfigEditor(props: Props) {
   const { onOptionsChange, options } = props;
@@ -39,8 +39,33 @@ export function ConfigEditor(props: Props) {
     });
   };
 
+  // Secure field (only sent to the backend)
+  const onNOTION_KEYChange = (event: ChangeEvent<HTMLInputElement>) => {
+    onOptionsChange({
+      ...options,
+      secureJsonData: {
+        NOTION_KEY: event.target.value,
+      },
+    });
+  };
+
+  const onResetNOTION_KEY = () => {
+    onOptionsChange({
+      ...options,
+      secureJsonFields: {
+        ...options.secureJsonFields,
+        NOTION_KEY: false,
+      },
+      secureJsonData: {
+        ...options.secureJsonData,
+        NOTION_KEY: '',
+      },
+    });
+  };
+
   const { jsonData, secureJsonFields } = options;
   const secureJsonData = (options.secureJsonData || {}) as MySecureJsonData;
+  const { NOTION_KEY } = secureJsonData;
 
   return (
     <div className="gf-form-group">
@@ -60,6 +85,16 @@ export function ConfigEditor(props: Props) {
           width={40}
           onReset={onResetAPIKey}
           onChange={onAPIKeyChange}
+        />
+      </InlineField>
+      <InlineField label="NOTION_KEY" labelWidth={12}>
+        <SecretInput
+          isConfigured={(secureJsonFields && secureJsonFields.NOTION_KEY) as boolean}
+          value={NOTION_KEY || ''}
+          placeholder="NOTION_KEY secure json field (backend only)"
+          width={40}
+          onReset={onResetNOTION_KEY}
+          onChange={onNOTION_KEYChange}
         />
       </InlineField>
     </div>

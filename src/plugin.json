@@ -4,6 +4,18 @@
   "name": "Notion",
   "id": "jialu-notion-datasource",
   "metrics": true,
+  "routes": [
+    {
+      "path": "notion",
+      "url": "https://api.notion.com",
+      "headers": [
+        {
+          "name": "Authorization",
+          "content": "Bearer {{ .SecureJsonData.NOTION_KEY }}"
+        }
+      ]
+    }
+  ],
   "info": {
     "description": "A datasource plugin to visualization data from notion database",
     "author": {
