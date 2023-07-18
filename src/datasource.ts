@@ -7,9 +7,14 @@ import {
   FieldType,
 } from '@grafana/data';
 import { getBackendSrv } from '@grafana/runtime';
+import defaults from 'lodash/defaults';
 
 import { MyQuery, MyDataSourceOptions } from './types';
 import { lastValueFrom } from 'rxjs';
+
+export const defaultQuery: Partial<MyQuery> = {
+  constant: 6.5,
+};
 
 export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
   databaseId: string;
@@ -17,7 +22,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
   constructor(instanceSettings: DataSourceInstanceSettings<MyDataSourceOptions>) {
     super(instanceSettings);
     this.url = instanceSettings.url!;
-    this.databaseId = '094dc79a21424d2db266f909ae89bf3f';
+    this.databaseId = 'bfb09b36687c425cbccef27d120fa92b';
   }
 
   async doRequest() {
@@ -36,26 +41,36 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     console.log('datasourceRequest', result)
     console.log("Success!")
   
-    return result;
+    return result.data;
   }
   
 
   async query(options: DataQueryRequest<MyQuery>): Promise<DataQueryResponse> {
-    const { range } = options;
-    const from = range!.from.valueOf();
-    const to = range!.to.valueOf();
+    // const { range } = options;
+    // const from = range!.from.valueOf();
+    // const to = range!.to.valueOf();
 
-    await this.doRequest();
+    const response = await this.doRequest();
+    const { results } = response as any;
 
     // Return a constant for each query.
     const data = options.targets.map((target) => {
-      return new MutableDataFrame({
-        refId: target.refId,
+      const query = defaults(target, defaultQuery);
+      const frame = new MutableDataFrame({
+        refId: query.refId,
         fields: [
-          { name: 'Time', values: [from, to], type: FieldType.time },
-          { name: 'Value', values: [target.constant, target.constant], type: FieldType.number },
+          { name: 'time', type: FieldType.time },
+          { name: 'value', type: FieldType.number },
         ],
       });
+
+      for (let t = 0; t < results.length; t++) {
+        frame.add({
+          time: results[t].created_time,
+          value: results[t].properties['金额'].number
+        })
+      }
+      return frame;
     });
 
     return { data };
