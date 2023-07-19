@@ -9,12 +9,8 @@ import {
 import { getBackendSrv } from '@grafana/runtime';
 import defaults from 'lodash/defaults';
 
-import { MyQuery, MyDataSourceOptions } from './types';
+import { MyQuery, MyDataSourceOptions, DEFAULT_QUERY } from './types';
 import { lastValueFrom } from 'rxjs';
-
-export const defaultQuery: Partial<MyQuery> = {
-  constant: 6.5,
-};
 
 export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
   databaseId: string;
@@ -55,7 +51,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
 
     // Return a constant for each query.
     const data = options.targets.map((target) => {
-      const query = defaults(target, defaultQuery);
+      const query = defaults(target, DEFAULT_QUERY);
       const frame = new MutableDataFrame({
         refId: query.refId,
         fields: [
