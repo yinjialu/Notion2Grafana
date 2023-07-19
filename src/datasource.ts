@@ -18,7 +18,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
   constructor(instanceSettings: DataSourceInstanceSettings<MyDataSourceOptions>) {
     super(instanceSettings);
     this.url = instanceSettings.url!;
-    this.databaseId = 'bfb09b36687c425cbccef27d120fa92b';
+    this.databaseId = instanceSettings.jsonData.NOTION_DATABASE_ID!;
   }
 
   async doRequest() {

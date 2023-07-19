@@ -7,37 +7,14 @@ interface Props extends DataSourcePluginOptionsEditorProps<MyDataSourceOptions, 
 
 export function ConfigEditor(props: Props) {
   const { onOptionsChange, options } = props;
-  const onPathChange = (event: ChangeEvent<HTMLInputElement>) => {
+
+  const onNOTION_DATABASE_IDChange = (event: ChangeEvent<HTMLInputElement>) => {
     const jsonData = {
       ...options.jsonData,
-      path: event.target.value,
-    };
-    onOptionsChange({ ...options, jsonData });
-  };
-
-  // Secure field (only sent to the backend)
-  const onAPIKeyChange = (event: ChangeEvent<HTMLInputElement>) => {
-    onOptionsChange({
-      ...options,
-      secureJsonData: {
-        apiKey: event.target.value,
-      },
-    });
-  };
-
-  const onResetAPIKey = () => {
-    onOptionsChange({
-      ...options,
-      secureJsonFields: {
-        ...options.secureJsonFields,
-        apiKey: false,
-      },
-      secureJsonData: {
-        ...options.secureJsonData,
-        apiKey: '',
-      },
-    });
-  };
+      NOTION_DATABASE_ID: event.target.value,
+    }
+    onOptionsChange({ ...options, jsonData })
+  }
 
   // Secure field (only sent to the backend)
   const onNOTION_KEYChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -69,22 +46,12 @@ export function ConfigEditor(props: Props) {
 
   return (
     <div className="gf-form-group">
-      <InlineField label="Path" labelWidth={12}>
+      <InlineField label="DATABASE_ID" labelWidth={12}>
         <Input
-          onChange={onPathChange}
-          value={jsonData.path || ''}
+          onChange={onNOTION_DATABASE_IDChange}
+          value={jsonData.NOTION_DATABASE_ID || ''}
           placeholder="json field returned to frontend"
           width={40}
-        />
-      </InlineField>
-      <InlineField label="API Key" labelWidth={12}>
-        <SecretInput
-          isConfigured={(secureJsonFields && secureJsonFields.apiKey) as boolean}
-          value={secureJsonData.apiKey || ''}
-          placeholder="secure json field (backend only)"
-          width={40}
-          onReset={onResetAPIKey}
-          onChange={onAPIKeyChange}
         />
       </InlineField>
       <InlineField label="NOTION_KEY" labelWidth={12}>
