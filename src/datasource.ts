@@ -11,6 +11,7 @@ import defaults from 'lodash/defaults';
 
 import { MyQuery, MyDataSourceOptions, DEFAULT_QUERY } from './types';
 import { lastValueFrom } from 'rxjs';
+import { NotionVersion } from './notion/util';
 
 export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
   databaseId: string;
@@ -26,16 +27,14 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
       method: "POST",
       url: this.url + '/notion' + '/v1/databases/' + this.databaseId + '/query',
       headers: {
-        "Notion-Version": "2022-06-28",
+        "Notion-Version": NotionVersion,
+        "accept": "application/json",
         "Content-Type": "application/json",
       },
       data: {}
     });
 
     const result = await lastValueFrom(response);
-
-    console.log('datasourceRequest', result)
-    console.log("Success!")
   
     return result.data;
   }
@@ -52,6 +51,8 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     // Return a constant for each query.
     const data = options.targets.map((target) => {
       const query = defaults(target, DEFAULT_QUERY);
+      const { numericColumn, timeColumn } = query;
+      console.log('numericColumn', numericColumn, 'timeColumn', timeColumn);
       const frame = new MutableDataFrame({
         refId: query.refId,
         fields: [
@@ -60,11 +61,13 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         ],
       });
 
-      for (let t = 0; t < results.length; t++) {
-        frame.add({
-          time: results[t].created_time,
-          value: results[t].properties['金额'].number
-        })
+      if (numericColumn && timeColumn) {
+        for (let t = 0; t < results.length; t++) {
+          frame.add({
+            time: results[t].properties[timeColumn.name][timeColumn.type],  // todo 支持 date 类型时间列
+            value: results[t].properties[numericColumn.name][numericColumn.type],
+          })
+        }
       }
       return frame;
     });

@@ -1,13 +1,14 @@
 import { DataQuery, DataSourceJsonData } from '@grafana/data';
+import type { GetDatabaseResponse } from '@notionhq/client/build/src/api-endpoints';
+
+type DatabasePropertyConfigResponse = GetDatabaseResponse['properties'][keyof GetDatabaseResponse['properties']];
 
 export interface MyQuery extends DataQuery {
-  queryText?: string;
-  constant: number;
+  numericColumn: DatabasePropertyConfigResponse;
+  timeColumn: DatabasePropertyConfigResponse;
 }
 
-export const DEFAULT_QUERY: Partial<MyQuery> = {
-  constant: 6.5,
-};
+export const DEFAULT_QUERY: Partial<MyQuery> = {};
 
 /**
  * These are options configured for each DataSource instance
