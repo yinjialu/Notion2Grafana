@@ -1,31 +1,58 @@
-import React, { ChangeEvent } from 'react';
-import { InlineField, Input } from '@grafana/ui';
-import { QueryEditorProps } from '@grafana/data';
+import React, { useEffect, useState } from 'react';
+import { InlineField, Select } from '@grafana/ui';
+import { QueryEditorProps, SelectableValue } from '@grafana/data';
 import { DataSource } from '../datasource';
 import { MyDataSourceOptions, MyQuery } from '../types';
+import { queryColumns } from '../notion/queryColums';
+import type { GetDatabaseResponse } from '@notionhq/client/build/src/api-endpoints';
 
 type Props = QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>;
 
-export function QueryEditor({ query, onChange, onRunQuery }: Props) {
-  const onQueryTextChange = (event: ChangeEvent<HTMLInputElement>) => {
-    onChange({ ...query, queryText: event.target.value });
-  };
+export function QueryEditor({ query, onChange, onRunQuery, datasource }: Props) {
+  const databaseId = datasource.databaseId;
+  const url = datasource.url;
+  const [ propertiesMap, setPropertiesMap ] = useState<GetDatabaseResponse['properties']>({});
+  const properties = Object.keys(propertiesMap);
+  const numericTypePropertier = properties.filter((p) => propertiesMap[p].type === 'number')
+  const timeTypePropertier = properties.filter((p) => {
+    const type = propertiesMap[p].type;
+    return type === 'created_time' || type === 'last_edited_time' // || type === 'date'
+  })
+  useEffect(() => {
+    queryColumns(url, databaseId).then((data) => {
+      setPropertiesMap(data.properties);
+    })
+  }, [url, databaseId])
 
-  const onConstantChange = (event: ChangeEvent<HTMLInputElement>) => {
-    onChange({ ...query, constant: parseFloat(event.target.value) });
-    // executes the query
-    onRunQuery();
-  };
+  const onNumericColumnChange = (v: SelectableValue<string>) => {
+    onChange({ ...query, numericColumn: propertiesMap[v.value!] });
+    if (query.timeColumn) {
+      onRunQuery();
+    }
+  }
 
-  const { queryText, constant } = query;
+  const onTimeColumnChange = (v: SelectableValue<string>) => {
+    onChange({ ...query, timeColumn: propertiesMap[v.value!] });
+    if (query.numericColumn) {
+      onRunQuery();
+    }
+  }
 
   return (
     <div className="gf-form">
-      <InlineField label="Constant">
-        <Input onChange={onConstantChange} value={constant} width={8} type="number" step="0.1" />
+      <InlineField label="Y轴">
+        <Select
+          value={query.numericColumn?.name}
+          onChange={onNumericColumnChange}
+          options={numericTypePropertier.map((p) => ({ label: p, value: p }))}
+        ></Select>
       </InlineField>
-      <InlineField label="Query Text" labelWidth={16} tooltip="Not used yet">
-        <Input onChange={onQueryTextChange} value={queryText || ''} />
+      <InlineField label="X轴">
+        <Select
+          value={query.timeColumn?.name}
+          onChange={onTimeColumnChange}
+          options={timeTypePropertier.map((p) => ({ label: p, value: p }))}
+        ></Select>
       </InlineField>
     </div>
   );
